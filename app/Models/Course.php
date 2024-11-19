@@ -12,11 +12,20 @@ class Course extends Model
     protected $fillable = [
         'name',
         'description',
-        'price'
+        'price',
+        'is_active',
+        'start_date',
+        'end_date',
+        'remaining_slots'
     ];
 
     public function registrations()
     {
         return $this->hasMany(Registration::class);
+    }
+
+    public function students()
+    {
+        return $this->belongsToMany(User::class, 'registrations');
     }
 }
