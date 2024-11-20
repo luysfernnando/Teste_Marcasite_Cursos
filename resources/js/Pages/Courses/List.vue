@@ -28,6 +28,11 @@ const submit = () => {
     });
 };
 
+function formatCurrency(value) {
+    if (value == null) return '';
+    return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }).replace('R$', '');
+}
+
 console.log(props, 'props');
 </script>
 
@@ -90,21 +95,21 @@ console.log(props, 'props');
                             <th class="px-4 py-2 text-left">Ativo</th>
                             <th class="px-4 py-2 text-left">Período de Inscrição</th>
                             <th class="px-4 py-2 text-left">Vagas Restantes</th>
-                            <th class="px-4 py-2 text-left">Ações</th>
+                            <th class="px-4 py-2 text-left"></th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr v-for="course in courses" :key="course.id" class="border-b">
                             <td class="px-4 py-2">{{ course.name }}</td>
                             <td class="px-4 py-2">{{ course.description }}</td>
-                            <td class="px-4 py-2">{{ `R$ ${course.price}` }}</td>
+                            <td class="px-4 py-2">R$ {{ formatCurrency(course.price) }}</td>
                             <td class="px-4 py-2">{{ course.is_active ? 'Sim' : 'Não' }}</td>
-                            <td class="px-4 py-2">{{ course.start_date }} até {{ course.end_date }}</td>
+                            <td class="px-4 py-2">{{ new Date(course.start_date).toLocaleDateString('pt-BR') }} até {{ new Date(course.end_date).toLocaleDateString('pt-BR') }}</td>
                             <td class="px-4 py-2">{{ course.remaining_slots }}</td>
                             <td class="px-4 py-2">
                                 <div class="flex space-x-2">
                                     <Link
-                                        :href="route('courses.students', { id: course.id })"
+                                        :href="route('students.list', { id: course.id })"
                                         class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
                                     >
                                         Ver Alunos

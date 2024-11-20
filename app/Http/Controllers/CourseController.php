@@ -64,4 +64,17 @@ class CourseController extends Controller
         $course->delete();
         return redirect()->route('courses.list')->with('success', 'Curso deletado com sucesso!');
     }
+
+    public function showStudents($id)
+    {
+        $course = Course::findOrFail($id);
+
+        $students = $course->students()->get();
+
+        return inertia('Courses/components/Students', [
+            'course' => $course,
+            'students' => $students,
+        ]);
+    }
+
 }

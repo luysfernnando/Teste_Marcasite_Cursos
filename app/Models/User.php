@@ -19,7 +19,11 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'type',
+        'is_active',
         'email',
+        'cpf',
+        'email_verified_at',
         'password',
     ];
 
@@ -44,5 +48,13 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    // Relacionamento para cursos em que o usuário está inscrito
+    public function courses()
+    {
+        return $this->belongsToMany(Course::class, 'registrations', 'user_id', 'course_id')
+            ->withPivot('created_at', 'payment_status', 'paid_value')
+            ->withTimestamps();
     }
 }

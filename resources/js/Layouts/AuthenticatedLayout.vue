@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import {ref, watch} from 'vue';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
@@ -37,19 +37,19 @@ const showingNavigationDropdown = ref(false);
                                 </NavLink>
 
                                 <!-- Cursos Link -->
-                                <NavLink :href="route('courses.list')" :active="route().current('courses.list')">
+                                <NavLink :href="route('courses.list')" :active="route().current('courses.*')">
                                     Cursos
                                 </NavLink>
 
                                 <!-- Usuários Link (caso necessário) -->
-                                <NavLink :href="route('users.index')" :active="route().current('users.index')">
+                                <NavLink :href="route('users.index')" :active="route().current('users.*')">
                                     Usuários
                                 </NavLink>
 
                                 <!-- Configurações Link -->
-                                <NavLink :href="route('settings.index')" :active="route().current('settings.index')">
-                                    Configurações
-                                </NavLink>
+<!--                                <NavLink :href="route('settings.index')" :active="route().current('settings.*')">-->
+<!--                                    Configurações-->
+<!--                                </NavLink>-->
                             </div>
                         </div>
 

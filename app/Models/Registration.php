@@ -12,12 +12,13 @@ class Registration extends Model
     protected $fillable = [
         'student_id',
         'course_id',
-        'payment_status'
+        'payment_status',
+        'paid_value'
     ];
 
-    public function student()
+    public function students()
     {
-        return $this->belongsTo(Student::class);
+        return $this->belongsTo(User::class);
     }
 
     public function course()

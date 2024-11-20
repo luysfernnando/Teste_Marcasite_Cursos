@@ -13,14 +13,13 @@ return new class extends Migration
     {
         Schema::create('registrations', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('student_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('course_id')->constrained()->onDelete('cascade');
-            $table->string('payment_status')->default('pending');
+            $table->integer('payment_status')->default('0');
+            $table->decimal('paid_value', 10, 2)->default(0);
             $table->timestamps();
         });
     }
-
-
 
     /**
      * Reverse the migrations.
