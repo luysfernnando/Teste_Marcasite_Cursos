@@ -97,11 +97,9 @@ class UserController extends Controller
             return redirect()->back()->withErrors(['user' => 'Usuário não encontrado']);
         }
 
-        // Salvar a foto no sistema de arquivos
         if ($request->file('photo')) {
             $path = $request->file('photo')->store('profile_photos', 'public');
 
-            // Atualizar o campo profile_photo_path no usuário
             $user->profile_photo_path = $path;
             $user->save();
         }

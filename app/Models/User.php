@@ -50,7 +50,6 @@ class User extends Authenticatable
         ];
     }
 
-    // Relacionamento para cursos em que o usuário está inscrito
     public function courses()
     {
         return $this->belongsToMany(Course::class, 'registrations', 'user_id', 'course_id')

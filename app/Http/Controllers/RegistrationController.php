@@ -23,43 +23,45 @@ class RegistrationController extends Controller
         ]);
     }
 
-    public function edit(Registration $registration)
+    public function edit($id)
     {
+
+        $registration = Registration::findOrFail($id);
+        $course = Course::findOrFail($registration->course_id);
+        $student = User::findOrFail($registration->user_id);
+
         return Inertia::render('Students/Edit', [
             'registration' => $registration,
+            'course' => $course,
+            'student' => $student,
         ]);
     }
 
-    public function update(Request $request, Registration $registration)
+    public function update(Request $request, $id)
     {
         $validated = $request->validate([
-            'student_id' => 'required|exists:students,id',
-            'course_id' => 'required|exists:courses,id',
-            'cpf' => 'required|string|max:14',
-            'password' => 'required|string|confirmed|min:6',
+            'payment_status' => 'required|int',
+            'paid_value' => 'required|numeric',
         ]);
 
+        $registration = Registration::findOrFail($id);
         $registration->update($validated);
 
-        return redirect()->route('students.list', $registration->course_id)->with('success', 'Inscrição atualizada com sucesso!');
+        return redirect()->back()->with('success', 'Inscrição atualizada com sucesso!');
     }
 
     public function destroy(Registration $registration)
     {
-
-        dd($registration);
-
         $registration->forceDelete();
 
-//        $registration->course->update(['remaining_slots' => $registration->course->remaining_slots + 1]);
-
-        return redirect()->route('students.list', 'id' === $registration->course_id)->with('success', 'Inscrição excluída com sucesso!');
+        return redirect()->route('students.list', [
+            'id' => $registration->course_id
+        ])->with('success', 'Inscrição excluída com sucesso!');
     }
 
     public function getRegistrations(Course $course)
     {
-        // Buscando todos os alunos disponíveis
-        $students = User::all()->where('type', 1);  // Adapte conforme sua lógica de alunos
+        $students = User::all()->where('type', 1);
 
         return inertia('Courses/components/Registration', [
             'course' => $course,
@@ -75,27 +77,22 @@ class RegistrationController extends Controller
             'password' => 'required|string|confirmed|min:6',
         ]);
 
-        // Verificar se o aluno existe
         $student = User::find($validated['student_id']);
 
         if (!$student) {
             return redirect()->back()->withErrors(['student_id' => 'Aluno não encontrado.']);
         }
 
-        // Verificar se o aluno já está inscrito no curso
         if (Registration::where('user_id', $student->id)->where('course_id', $course->id)->exists()) {
             return redirect()->back()->withErrors(['student_id' => 'Aluno já inscrito no curso.']);
         }
 
-        // Registrar o aluno no curso
         $course->students()->attach($student->id, [
             'created_at' => now(),
         ]);
 
-        // Atualizar senha do aluno
         $student->update(['password' => bcrypt($validated['password'])]);
 
-        // Atualizar a quantidade de vagas restantes
         $course->update(['remaining_slots' => $course->remaining_slots - 1]);
 
         return redirect()->route('courses.list')->with('success', 'Aluno inscrito com sucesso!');
