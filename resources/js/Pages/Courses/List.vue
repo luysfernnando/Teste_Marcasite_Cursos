@@ -1,13 +1,20 @@
 <script setup>
-import { ref, computed } from 'vue';
+import {ref, computed, watch} from 'vue';
 import { Head, Link, useForm, router } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Input from '@/Components/TextInput.vue';
 import Label from '@/Components/InputLabel.vue';
 import Button from '@/Components/PrimaryButton.vue';
 import { IconPeople, IconTrash, IconSquareEditOutline } from "@iconify-prerendered/vue-mdi";
+import {toast} from "vue3-toastify";
 
-const props = defineProps(['courses']);
+const props = defineProps({
+    courses: Object,
+    students: Object,
+    flash: Object,
+    errors: Object,
+});
+
 const showForm = ref(false);
 const searchQuery = ref('');
 const currentPage = ref(1);
@@ -83,6 +90,19 @@ function formatCurrency(value) {
     if (value == null) return '';
     return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }).replace('R$', '');
 }
+
+watch(() => props.flash, (newFlash) => {
+    if (newFlash.success) {
+        toast.success(newFlash.success, {
+            autoClose: 5000,
+        });
+    }
+    if (newFlash.error) {
+        toast.error(newFlash.error, {
+            autoClose: 5000,
+        });
+    }
+}, { immediate: true });
 </script>
 
 

@@ -26,7 +26,13 @@ class CourseController extends Controller
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'remaining_slots' => 'required|integer|min:0',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
+
+        if ($request->hasFile('photo')) {
+            $path = $request->file('photo')->store('course_logo', 'public');
+            $validated['image_path'] = $path;
+        }
 
         Course::create($validated);
 

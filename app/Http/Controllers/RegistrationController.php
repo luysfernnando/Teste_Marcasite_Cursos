@@ -50,20 +50,21 @@ class RegistrationController extends Controller
         return redirect()->back()->with('success', 'Inscrição atualizada com sucesso!');
     }
 
-    public function destroy(Registration $registration)
+    public function destroy($id)
     {
-        $registration->forceDelete();
+        $registration = Registration::findOrFail($id);
+        $registration->delete();
 
-        return redirect()->route('students.list', [
-            'id' => $registration->course_id
-        ])->with('success', 'Inscrição excluída com sucesso!');
+        return redirect()->back()->with('success', 'Inscrição excluída com sucesso!');
     }
 
     public function getRegistrations(Course $course)
     {
+        $registration = Registration::all()->where('course_id', $course->id);
         $students = User::all()->where('type', 1);
 
-        return inertia('Courses/components/Registration', [
+        return Inertia::render('Courses/components/Registration', [
+            'registration' => $registration,
             'course' => $course,
             'students' => $students,
         ]);
@@ -84,7 +85,7 @@ class RegistrationController extends Controller
         }
 
         if (Registration::where('user_id', $student->id)->where('course_id', $course->id)->exists()) {
-            return redirect()->back()->withErrors(['student_id' => 'Aluno já inscrito no curso.']);
+            return redirect()->back()->withErrors(['error' => 'Aluno já inscrito no curso.']);
         }
 
         $course->students()->attach($student->id, [

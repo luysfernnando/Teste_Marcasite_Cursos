@@ -29,10 +29,7 @@ const form = useForm({
 });
 
 function submit() {
-    form.put(route('students.update', {id: props.registration.id}), {
-        onSuccess: () => toast.success('Inscrição atualizada com sucesso!'),
-        onError: () => toast.error('Ocorreu um erro ao atualizar a inscrição.'),
-    });
+    form.put(route('students.update', {id: props.registration.id}));
 }
 
 // Exibir notificações com base na propriedade flash
