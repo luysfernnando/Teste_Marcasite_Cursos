@@ -1,11 +1,16 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Button from '@/Components/PrimaryButton.vue';
+import {IconPeople, IconTrash, IconSquareEditOutline} from "@iconify-prerendered/vue-mdi";
 
 const props = defineProps(['courses']);
 const showForm = ref(false);
+const searchQuery = ref('');
+const currentPage = ref(1);
+const itemsPerPage = 10;
+
 const form = useForm({
     name: '',
     description: '',
@@ -14,6 +19,23 @@ const form = useForm({
     start_date: '',
     end_date: '',
     remaining_slots: '',
+});
+
+const filteredCourses = computed(() => {
+    return props.courses.filter(course => {
+        return course.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+            course.description.toLowerCase().includes(searchQuery.value.toLowerCase());
+    });
+});
+
+const paginatedCourses = computed(() => {
+    const start = (currentPage.value - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    return filteredCourses.value.slice(start, end);
+});
+
+const totalPages = computed(() => {
+    return Math.ceil(filteredCourses.value.length / itemsPerPage);
 });
 
 const submit = () => {
@@ -43,6 +65,7 @@ console.log(props, 'props');
         <template #header>
             <div class="flex justify-between items-center">
                 <h2 class="text-xl font-semibold leading-tight text-gray-800">Lista de Cursos</h2>
+                <input v-model="searchQuery" type="text" placeholder="Buscar..." class="ml-4 px-4 py-2 border rounded-lg">
                 <Button @click="showForm = !showForm">Novo Curso</Button>
             </div>
         </template>
@@ -99,7 +122,7 @@ console.log(props, 'props');
                         </tr>
                         </thead>
                         <tbody>
-                        <tr v-for="course in courses" :key="course.id" class="border-b">
+                        <tr v-for="course in paginatedCourses" :key="course.id" class="border-b">
                             <td class="px-4 py-2">{{ course.name }}</td>
                             <td class="px-4 py-2">{{ course.description }}</td>
                             <td class="px-4 py-2">R$ {{ formatCurrency(course.price) }}</td>
@@ -110,29 +133,34 @@ console.log(props, 'props');
                                 <div class="flex space-x-2">
                                     <Link
                                         :href="route('students.list', { id: course.id })"
-                                        class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                                        class="px-2 py-2 text-black rounded-lg hover:bg-blue-600"
                                     >
-                                        Ver Alunos
+                                        <IconPeople class="w-6 h-6" />
                                     </Link>
                                     <Link
                                         :href="route('courses.edit', { id: course.id })"
-                                        class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"
+                                        class="px-2 py-2 text-black rounded-lg hover:bg-yellow-600"
                                     >
-                                        Editar
+                                        <IconSquareEditOutline class="w-6 h-6" />
                                     </Link>
                                     <Link
                                         :href="route('courses.delete', { id: course.id })"
                                         method="delete"
                                         as="button"
-                                        class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                                        class="px-2 py-2 text-black rounded-lg hover:bg-red-600"
                                     >
-                                        Apagar
+                                        <IconTrash class="w-6 h-6" />
                                     </Link>
                                 </div>
                             </td>
                         </tr>
                         </tbody>
                     </table>
+                </div>
+                <div class="flex justify-between mt-4">
+                    <button @click="currentPage = Math.max(currentPage - 1, 1)" :disabled="currentPage === 1" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">Anterior</button>
+                    <span>Página {{ currentPage }} de {{ totalPages }}</span>
+                    <button @click="currentPage = Math.min(currentPage + 1, totalPages)" :disabled="currentPage === totalPages" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">Próxima</button>
                 </div>
             </div>
         </div>

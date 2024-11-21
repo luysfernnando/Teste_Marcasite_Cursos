@@ -1,17 +1,20 @@
 <script setup>
+import { ref, computed, watch } from 'vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Button from '@/Components/PrimaryButton.vue';
-import {watch} from "vue";
-import {toast} from "vue3-toastify";
-import {IconAccountEdit, IconTrash} from "@iconify-prerendered/vue-mdi";
+import { toast } from "vue3-toastify";
+import { IconSquareEditOutline, IconTrash} from "@iconify-prerendered/vue-mdi";
 
-// Recebendo os props
 const props = defineProps({
     course: Object,
     students: Array,
     flash: Object
 });
+
+const searchQuery = ref('');
+const currentPage = ref(1);
+const itemsPerPage = 10;
 
 const paymentStatus = {
     0: { text: 'Aguardando Pagamento', color: 'text-orange-500' },
@@ -19,14 +22,28 @@ const paymentStatus = {
     2: { text: 'Cancelado', color: 'text-red-500' }
 };
 
+const filteredStudents = computed(() => {
+    return props.students.filter(student => {
+        return student.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+            student.email.toLowerCase().includes(searchQuery.value.toLowerCase());
+    });
+});
+
+const paginatedStudents = computed(() => {
+    const start = (currentPage.value - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    return filteredStudents.value.slice(start, end);
+});
+
+const totalPages = computed(() => {
+    return Math.ceil(filteredStudents.value.length / itemsPerPage);
+});
+
 function formatCurrency(value) {
     if (value == null) return '';
     return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }).replace('R$', '');
 }
 
-console.log(props);
-
-// Exibir notificações com base na propriedade flash
 watch(() => props.flash, (newFlash) => {
     if (newFlash.success) {
         toast.success(newFlash.success, {
@@ -39,7 +56,6 @@ watch(() => props.flash, (newFlash) => {
         });
     }
 }, { immediate: true });
-
 </script>
 
 <template>
@@ -49,6 +65,7 @@ watch(() => props.flash, (newFlash) => {
         <template #header>
             <div class="flex justify-between items-center">
                 <h2 class="text-xl font-semibold leading-tight text-gray-800">Alunos do curso: {{ course.name }}</h2>
+                <input v-model="searchQuery" type="text" placeholder="Buscar..." class="ml-4 px-4 py-2 border rounded-lg">
                 <Button @click="$inertia.get(route('registration.get', { course: course.id }))">Nova Inscrição</Button>
             </div>
         </template>
@@ -68,7 +85,7 @@ watch(() => props.flash, (newFlash) => {
                         </tr>
                         </thead>
                         <tbody>
-                        <tr v-for="student in students" :key="student.id" class="border-b">
+                        <tr v-for="student in paginatedStudents" :key="student.id" class="border-b">
                             <td class="px-4 py-2">{{ student.name }}</td>
                             <td class="px-4 py-2">{{ new Date(student.pivot?.created_at).toLocaleDateString('pt-BR') }}</td>
                             <td class="px-4 py-2">{{ student.email }}</td>
@@ -77,16 +94,21 @@ watch(() => props.flash, (newFlash) => {
                             </td>
                             <td class="px-4 py-2">R$ {{ formatCurrency(student.pivot?.paid_value) }}</td>
                             <td class="px-4 py-2 flex space-x-2">
-                                <Link v-if="student.id" :href="route('students.edit', { id: student.pivot?.id })" class="hover:text-blue-600">
-                                    <IconAccountEdit />
+                                <Link v-if="student.id" :href="route('students.edit', { id: student.pivot?.id })" class="px-2 py-2 text-black rounded-lg hover:bg-yellow-600">
+                                    <IconSquareEditOutline class="w-6 h-6" />
                                 </Link>
-                                <Link v-if="student.id" :href="route('students.destroy', { id: student.pivot?.id })" method="delete" class="hover:text-red-600">
-                                    <IconTrash />
+                                <Link v-if="student.id" :href="route('students.destroy', { id: student.pivot?.id })" method="delete" class="px-2 py-2 text-black rounded-lg hover:bg-red-600">
+                                    <IconTrash class="w-6 h-6" />
                                 </Link>
                             </td>
                         </tr>
                         </tbody>
                     </table>
+                </div>
+                <div class="flex justify-between mt-4">
+                    <button @click="currentPage = Math.max(currentPage - 1, 1)" :disabled="currentPage === 1" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">Anterior</button>
+                    <span>Página {{ currentPage }} de {{ totalPages }}</span>
+                    <button @click="currentPage = Math.min(currentPage + 1, totalPages)" :disabled="currentPage === totalPages" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">Próxima</button>
                 </div>
             </div>
         </div>
