@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -17,10 +18,6 @@ Route::get('/', function () {
         'phpVersion' => PHP_VERSION,
     ]);
 });
-
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     // Dashboard
@@ -50,6 +47,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/courses/{id}/students', [CourseController::class, 'showStudents'])->name('courses.students');
     Route::get('courses/{course}/registration/new', [RegistrationController::class, 'getRegistrations'])->name('registration.get');
     Route::post('courses/{course}/registration', [RegistrationController::class, 'storeRegistration'])->name('registration.store');
+    Route::post('/courses/{id}/upload-photo', [CourseController::class, 'uploadPhoto'])->name('courses.uploadPhoto');
 
     // Inscrições
     Route::get('/registration/{id}/students', [RegistrationController::class, 'index'])->name('students.list');
@@ -57,11 +55,11 @@ Route::middleware('auth')->group(function () {
     Route::put('/registration/{id}', [RegistrationController::class, 'update'])->name('students.update');
     Route::delete('/registration/{id}', [RegistrationController::class, 'destroy'])->name('students.destroy');
 
-    // Configurações
-    Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
-
     // Registro de cursos
     Route::post('/register', [RegistrationController::class, 'register'])->name('courses.register');
+
+    // Configurações
+    Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
 });
 
 require __DIR__.'/auth.php';

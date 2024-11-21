@@ -77,4 +77,25 @@ class CourseController extends Controller
         ]);
     }
 
+    public function uploadPhoto(Request $request, $id)
+    {
+        $request->validate([
+            'photo' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        $course = Course::findOrFail($id);
+
+        if (!$course) {
+            return redirect()->back()->withErrors(['user' => 'Usuário não encontrado']);
+        }
+
+        if ($request->file('photo')) {
+            $path = $request->file('photo')->store('course_logo', 'public');
+
+            $course->image_path = $path;
+            $course->save();
+        }
+
+        return redirect()->route('courses.edit', $id)->with('success', 'Imagem do curso atualizada com sucesso!');
+    }
 }

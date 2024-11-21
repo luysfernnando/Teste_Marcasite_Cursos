@@ -16,7 +16,8 @@ class Course extends Model
         'is_active',
         'start_date',
         'end_date',
-        'remaining_slots'
+        'remaining_slots',
+        'image_path',
     ];
 
     public function registrations()

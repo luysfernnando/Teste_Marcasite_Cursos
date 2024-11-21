@@ -166,6 +166,7 @@ watch(() => props.flash, (newFlash) => {
                     </div>
 
                     <div class="w-1/3 pl-4 flex flex-col items-center">
+                        <InputLabel class="block text-gray-700" required>Imagem do Usuário</InputLabel>
                         <img :src="props.user?.profile_photo_path ? '/storage/' + props.user.profile_photo_path : 'https://cdn0.iconfinder.com/data/icons/user-pictures/100/unknown2-512.png'"
                              alt="Foto de Perfil"
                              class="w-32 h-32 rounded-full mb-4"
