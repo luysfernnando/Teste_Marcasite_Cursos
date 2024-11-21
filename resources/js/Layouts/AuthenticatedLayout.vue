@@ -23,7 +23,7 @@ const user = props.auth.user;
                         <div class="flex">
                             <!-- Logo -->
                             <div class="flex shrink-0 items-center">
-                                <Link :href="route('dashboard')">
+                                <Link :href="route('dashboard.list')">
                                     <ApplicationLogo class="block h-9 w-auto fill-current text-gray-800" />
                                 </Link>
                             </div>
@@ -31,7 +31,7 @@ const user = props.auth.user;
                             <!-- Navigation Links -->
                             <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                                 <!-- Dashboard Link -->
-                                <NavLink :href="route('dashboard')" :active="route().current('dashboard')">
+                                <NavLink :href="route('dashboard.list')" :active="route().current('dashboard.*')">
                                     Dashboard
                                 </NavLink>
 
@@ -104,7 +104,7 @@ const user = props.auth.user;
                 >
                     <div class="space-y-1 pb-3 pt-2">
                         <!-- Dashboard Link -->
-                        <ResponsiveNavLink :href="route('dashboard')" :active="route().current('dashboard')">
+                        <ResponsiveNavLink :href="route('dashboard.list')" :active="route().current('dashboard.list')">
                             Dashboard
                         </ResponsiveNavLink>
 
