@@ -1,9 +1,11 @@
 <script setup>
 import { ref, computed } from 'vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm, router } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import Input from '@/Components/TextInput.vue';
+import Label from '@/Components/InputLabel.vue';
 import Button from '@/Components/PrimaryButton.vue';
-import {IconPeople, IconTrash, IconSquareEditOutline} from "@iconify-prerendered/vue-mdi";
+import { IconPeople, IconTrash, IconSquareEditOutline } from "@iconify-prerendered/vue-mdi";
 
 const props = defineProps(['courses']);
 const showForm = ref(false);
@@ -15,11 +17,15 @@ const form = useForm({
     name: '',
     description: '',
     price: '',
-    is_active: false,
+    is_active: 1,
     start_date: '',
     end_date: '',
     remaining_slots: '',
+    photo: null,
 });
+
+const errors = ref({});
+const photoPreviewUrl = ref(null);
 
 const filteredCourses = computed(() => {
     return props.courses.filter(course => {
@@ -39,24 +45,46 @@ const totalPages = computed(() => {
 });
 
 const submit = () => {
-    form.post(route('courses.store'), {
+    const formData = new FormData();
+    formData.append('name', form.name);
+    formData.append('description', form.description);
+    formData.append('price', form.price);
+    formData.append('is_active', form.is_active);
+    formData.append('start_date', form.start_date);
+    formData.append('end_date', form.end_date);
+    formData.append('remaining_slots', form.remaining_slots);
+    if (form.photo) {
+        formData.append('photo', form.photo);
+    }
+
+    router.post(route('courses.store'), formData, {
         onSuccess: () => {
             showForm.value = false;
             form.reset();
+            photoPreviewUrl.value = null;
         },
-        onError: (errors) => {
-            console.log(errors);
+        onError: (err) => {
+            errors.value = err;
+            console.log(errors.value);
         }
     });
+};
+
+const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    form.photo = file;
+
+    if (file) {
+        photoPreviewUrl.value = URL.createObjectURL(file);
+    }
 };
 
 function formatCurrency(value) {
     if (value == null) return '';
     return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }).replace('R$', '');
 }
-
-console.log(props, 'props');
 </script>
+
 
 <template>
     <Head title="Cursos" />
@@ -65,46 +93,80 @@ console.log(props, 'props');
         <template #header>
             <div class="flex justify-between items-center">
                 <h2 class="text-xl font-semibold leading-tight text-gray-800">Lista de Cursos</h2>
-                <input v-model="searchQuery" type="text" placeholder="Buscar..." class="ml-4 px-4 py-2 border rounded-lg">
-                <Button @click="showForm = !showForm">Novo Curso</Button>
+                <input v-if="!showForm" v-model="searchQuery" type="text" placeholder="Buscar..." class="ml-4 px-4 py-2 border rounded-lg">
+                <Button @click="showForm = !showForm">{{ showForm ? 'Voltar' : 'Novo Curso' }}</Button>
             </div>
         </template>
 
         <div class="mt-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div v-if="showForm" class="bg-white shadow rounded-lg p-6">
-                <form @submit.prevent="submit">
-                    <div class="mb-4">
-                        <label for="name" class="block text-sm font-medium text-gray-700">Nome</label>
-                        <input v-model="form.name" type="text" id="name" class="mt-1 block w-full" required>
+            <div v-if="showForm" class="bg-white shadow rounded-lg p-6 flex">
+                <div class="w-2/3 pr-4">
+                    <form @submit.prevent="submit">
+                        <div class="mb-4 flex">
+                            <div class="w-1/2 pr-2">
+                                <Label for="name" class="block text-sm font-medium text-gray-700">Nome do Curso</Label>
+                                <Input v-model="form.name" type="text" id="name" class="mt-1 block w-full" required/>
+                                <div v-if="errors.name" class="text-danger">{{ errors.name }}</div>
+                            </div>
+                            <div class="w-1/2 pr-2">
+                                <Label for="price" class="block text-sm font-medium text-gray-700">Preço</Label>
+                                <Input v-model="form.price" type="number" id="price" class="mt-1 block w-full" required/>
+                                <div v-if="errors.price" class="text-danger">{{ errors.price }}</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4 flex">
+                            <div class="w-1/2 pr-2">
+                                <Label for="start_date" class="block text-sm font-medium text-gray-700">Data de Início</Label>
+                                <Input v-model="form.start_date" type="date" id="start_date" class="mt-1 block w-full" required/>
+                                <div v-if="errors.start_date" class="text-danger">{{ errors.start_date }}</div>
+                            </div>
+                            <div class="w-1/2 pr-2">
+                                <Label for="end_date" class="block text-sm font-medium text-gray-700">Data de Término</Label>
+                                <Input v-model="form.end_date" type="date" id="end_date" class="mt-1 block w-full" required/>
+                                <div v-if="errors.end_date" class="text-danger">{{ errors.end_date }}</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4 flex">
+                            <div class="w-1/2 pr-2">
+                                <Label for="remaining_slots" class="block text-sm font-medium text-gray-700">Vagas Restantes</Label>
+                                <Input v-model="form.remaining_slots" type="number" id="remaining_slots" class="mt-1 block w-full" required/>
+                                <div v-if="errors.remaining_slots" class="text-danger">{{ errors.remaining_slots }}</div>
+                            </div>
+                            <div class="w-1/2 pr-2">
+                                <Label for="is_active" class="block text-sm font-medium text-gray-700">Ativo</Label>
+                                <select v-model="form.is_active" class="mt-1 block w-full border-gray-300 rounded-md">
+                                    <option value="1">Sim</option>
+                                    <option value="0">Não</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <Label for="description" class="block text-sm font-medium text-gray-700">Descrição</Label>
+                            <Input v-model="form.description" type="text" id="description" class="mt-1 block w-full" required/>
+                            <div v-if="errors.description" class="text-danger">{{ errors.description }}</div>
+                        </div>
+
+                        <div class="w-full">
+                            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                Criar curso
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="w-1/3 flex flex-col items-center">
+                    <Label for="photo" class="block text-sm font-medium text-gray-700 mb-2">Imagem do Curso</Label>
+
+                    <!-- Pré-visualização da imagem selecionada -->
+                    <div v-if="photoPreviewUrl" class="w-full">
+                        <img :src="photoPreviewUrl" alt="Prévia da Imagem" class="w-full h-auto object-cover rounded-lg max-h-60" />
                     </div>
-                    <div class="mb-4">
-                        <label for="name" class="block text-sm font-medium text-gray-700">Descrição</label>
-                        <input v-model="form.description" type="text" id="name" class="mt-1 block w-full" required>
-                    </div>
-                    <div class="mb-4">
-                        <label for="price" class="block text-sm font-medium text-gray-700">Valor</label>
-                        <input v-model="form.price" type="number" id="price" class="mt-1 block w-full" required>
-                    </div>
-                    <div class="mb-4">
-                        <label for="is_active" class="block text-sm font-medium text-gray-700">Ativo</label>
-                        <input v-model="form.is_active" type="checkbox" id="is_active" class="mt-1" :true-value="1" :false-value="0">
-                    </div>
-                    <div class="mb-4">
-                        <label for="start_date" class="block text-sm font-medium text-gray-700">Data de Início</label>
-                        <input v-model="form.start_date" type="date" id="start_date" class="mt-1 block w-full" required>
-                    </div>
-                    <div class="mb-4">
-                        <label for="end_date" class="block text-sm font-medium text-gray-700">Data de Término</label>
-                        <input v-model="form.end_date" type="date" id="end_date" class="mt-1 block w-full" required>
-                    </div>
-                    <div class="mb-4">
-                        <label for="remaining_slots" class="block text-sm font-medium text-gray-700">Vagas Restantes</label>
-                        <input v-model="form.remaining_slots" type="number" id="remaining_slots" class="mt-1 block w-full" required>
-                    </div>
-                    <div class="flex justify-end">
-                        <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Salvar</button>
-                    </div>
-                </form>
+
+                    <Input type="file" @change="handleFileChange" class="mb-4" />
+                </div>
             </div>
 
             <div v-else class="bg-white shadow rounded-lg p-6">
