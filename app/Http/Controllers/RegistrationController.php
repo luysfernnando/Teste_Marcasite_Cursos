@@ -55,6 +55,8 @@ class RegistrationController extends Controller
         $registration = Registration::findOrFail($id);
         $registration->delete();
 
+        $registration->course->update(['remaining_slots' => $registration->course->remaining_slots + 1]);
+
         return redirect()->back()->with('success', 'Inscrição excluída com sucesso!');
     }
 
@@ -74,14 +76,13 @@ class RegistrationController extends Controller
     {
         $validated = $request->validate([
             'student_id' => 'required|exists:users,id',
-            'cpf' => 'required|string|max:14',
-            'password' => 'required|string|confirmed|min:6',
+            'cpf' => 'required|string|max:14'
         ]);
 
         $student = User::find($validated['student_id']);
 
         if (!$student) {
-            return redirect()->back()->withErrors(['student_id' => 'Aluno não encontrado.']);
+            return redirect()->back()->withErrors(['error' => 'Aluno não encontrado.']);
         }
 
         if (Registration::where('user_id', $student->id)->where('course_id', $course->id)->exists()) {
@@ -92,9 +93,8 @@ class RegistrationController extends Controller
             'created_at' => now(),
         ]);
 
-        $student->update(['password' => bcrypt($validated['password'])]);
-
         $course->update(['remaining_slots' => $course->remaining_slots - 1]);
+        $student->update(['cpf' => $validated['cpf']]);
 
         return redirect()->route('courses.list')->with('success', 'Aluno inscrito com sucesso!');
     }

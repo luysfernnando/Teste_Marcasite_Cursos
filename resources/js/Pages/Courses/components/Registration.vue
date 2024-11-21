@@ -6,6 +6,7 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import Input from '@/Components/TextInput.vue';
 import Label from '@/Components/InputLabel.vue';
 import {toast} from "vue3-toastify";
+import CpfInput from "@/Components/CpfInput.vue";
 
 // Recebendo os alunos e o curso como props
 const props = defineProps({
@@ -27,7 +28,7 @@ const form = useForm({
 
 // Função que preenche os dados do aluno automaticamente
 const fillStudentData = (studentId) => {
-    const selectedStudent = props.students[studentId];
+    const selectedStudent = Object.values(props.students).find(student => student.id === studentId);
     if (selectedStudent) {
         form.name = selectedStudent.name;
         form.cpf = selectedStudent.cpf || '';
@@ -42,12 +43,7 @@ watch(() => form.student_id, (newStudentId) => {
 
 // Envio do formulário
 const submit = () => {
-    form.post(route('registration.store', { course: props.course.id }), {
-        onSuccess: () => {
-            toast.success('Aluno registrado com sucesso!');
-            form.reset();
-        },
-    });
+    form.post(route('registration.store', { course: props.course.id }));
 };
 
 // Exibir notificações com base na propriedade flash
@@ -81,7 +77,7 @@ watch(() => props.errors, (newFlash) => {
                                 <Label class="block text-sm font-medium text-gray-700" for="student_id">Selecione o Aluno</Label>
                                 <select id="student_id" v-model="form.student_id" class="mt-1 block w-full border-gray-300 rounded-md" required>
                                     <option value="">Selecione um aluno</option>
-                                    <option v-for="(student, index) in students" :key="student.id" :value="index">
+                                    <option v-for="student in students" :key="student.id" :value="student.id">
                                         {{ student.name }}
                                     </option>
                                 </select>
@@ -90,7 +86,7 @@ watch(() => props.errors, (newFlash) => {
                             <!-- Nome  -->
                             <div class="w-1/2 pr-2">
                                 <Label class="block text-sm font-medium text-gray-700" for="name">Nome</Label>
-                                <Input id="name" v-model="form.name" class="mt-1 block w-full" readonly type="text"/>
+                                <Input id="name" v-model="form.name" class="mt-1 block w-full" disabled readonly type="text"/>
                             </div>
                         </div>
 
@@ -98,27 +94,13 @@ watch(() => props.errors, (newFlash) => {
                             <!-- CPF -->
                             <div class="w-1/2 pr-2">
                                 <Label class="block text-sm font-medium text-gray-700" for="cpf">CPF</Label>
-                                <Input id="cpf" v-model="form.cpf" class="mt-1 block w-full" required type="text"/>
+                                <CpfInput id="cpf" v-model="form.cpf" class="mt-1 block w-full" label="CPF" required type="text"/>
                             </div>
 
                             <!-- E-mail -->
                             <div class="w-1/2 pr-2">
                                 <Label class="block text-sm font-medium text-gray-700" for="email">E-mail</Label>
-                                <Input id="email" v-model="form.email" class="mt-1 block w-full" readonly type="email"/>
-                            </div>
-                        </div>
-
-                        <div class="mb-4 flex">
-                            <!-- Senha -->
-                            <div class="w-1/2 pr-2">
-                                <Label class="block text-sm font-medium text-gray-700" for="password">Senha</Label>
-                                <Input id="password" v-model="form.password" class="mt-1 block w-full" required type="password"/>
-                            </div>
-
-                            <!-- Confirmação de Senha -->
-                            <div class="w-1/2 pr-2">
-                                <Label class="block text-sm font-medium text-gray-700" for="password_confirmation">Confirmar Senha</Label>
-                                <Input id="password_confirmation" v-model="form.password_confirmation" class="mt-1 block w-full" required type="password"/>
+                                <Input id="email" v-model="form.email" class="mt-1 block w-full" disabled readonly type="email"/>
                             </div>
                         </div>
 
@@ -132,4 +114,3 @@ watch(() => props.errors, (newFlash) => {
         </div>
     </AuthenticatedLayout>
 </template>
-

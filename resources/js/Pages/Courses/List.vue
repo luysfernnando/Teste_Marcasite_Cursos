@@ -194,13 +194,13 @@ watch(() => props.flash, (newFlash) => {
                     <table class="min-w-full table-auto">
                         <thead class="bg-gray-100">
                         <tr>
-                            <th class="px-4 py-2 text-left">Nome</th>
-                            <th class="px-4 py-2 text-left">Descrição</th>
-                            <th class="px-4 py-2 text-left">Valor</th>
-                            <th class="px-4 py-2 text-left">Ativo</th>
-                            <th class="px-4 py-2 text-left">Período de Inscrição</th>
-                            <th class="px-4 py-2 text-left">Vagas Restantes</th>
-                            <th class="px-4 py-2 text-left"></th>
+                            <th class="px-4 py-2 text-left w-auto">Nome</th>
+                            <th class="px-4 py-2 text-left w-auto">Descrição</th>
+                            <th class="px-4 py-2 text-left w-1/6">Valor</th>
+                            <th class="px-4 py-2 text-left w-auto">Ativo</th>
+                            <th class="px-4 py-2 text-left w-auto">Período de Inscrição</th>
+                            <th class="px-4 py-2 text-left w-auto">Vagas Restantes</th>
+                            <th class="px-4 py-2 flex space-x-2 w-full"></th>
                         </tr>
                         </thead>
                         <tbody>
