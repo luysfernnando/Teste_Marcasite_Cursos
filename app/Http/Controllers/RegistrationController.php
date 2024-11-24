@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Course;
 use App\Models\Registration;
-use App\Models\Student;
 use App\Models\User;
-use Illuminate\Http\Request;
+use App\Http\Requests\Registration\StoreRegistrationRequest;
+use App\Http\Requests\Registration\UpdateRegistrationRequest;
 use Inertia\Inertia;
 
 class RegistrationController extends Controller
@@ -25,7 +25,6 @@ class RegistrationController extends Controller
 
     public function edit($id)
     {
-
         $registration = Registration::findOrFail($id);
         $course = Course::findOrFail($registration->course_id);
         $student = User::findOrFail($registration->user_id);
@@ -37,12 +36,9 @@ class RegistrationController extends Controller
         ]);
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateRegistrationRequest $request, $id)
     {
-        $validated = $request->validate([
-            'payment_status' => 'required|int',
-            'paid_value' => 'required|numeric',
-        ]);
+        $validated = $request->validated();
 
         $registration = Registration::findOrFail($id);
         $registration->update($validated);
@@ -72,12 +68,9 @@ class RegistrationController extends Controller
         ]);
     }
 
-    public function storeRegistration(Request $request, Course $course)
+    public function storeRegistration(StoreRegistrationRequest $request, Course $course)
     {
-        $validated = $request->validate([
-            'student_id' => 'required|exists:users,id',
-            'cpf' => 'required|string|max:14'
-        ]);
+        $validated = $request->validated();
 
         $student = User::find($validated['student_id']);
 

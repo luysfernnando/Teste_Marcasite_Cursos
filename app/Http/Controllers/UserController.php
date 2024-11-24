@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Course;
-use App\Models\Registration;
 use App\Models\User;
-use Illuminate\Http\Request;
+use App\Http\Requests\User\StoreUserRequest;
+use App\Http\Requests\User\UpdateUserRequest;
+use App\Http\Requests\User\UploadUserPhotoRequest;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 
@@ -30,16 +30,9 @@ class UserController extends Controller
         return inertia('Users/Edit', ['user' => null]);
     }
 
-    public function store(Request $request)
+    public function store(StoreUserRequest $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'type' => 'required',
-            'is_active' => 'required',
-            'email' => 'required|email|unique:users,email',
-            'cpf' => 'required|string|max:14|unique:users,cpf',
-            'password' => 'required|string|min:6|confirmed',
-        ]);
+        $validated = $request->validated();
 
         User::create([
             'name' => $validated['name'],
@@ -53,16 +46,9 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', 'Usuário criado com sucesso!');
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateUserRequest $request, $id)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'type' => 'required',
-            'is_active' => 'required',
-            'email' => 'required|email|unique:users,email,' . $id,
-            'cpf' => 'required|max:14|unique:users,cpf,' . $id,
-            'password' => 'nullable|min:6|confirmed',
-        ]);
+        $validated = $request->validated();
 
         $user = User::findOrFail($id);
         $user->update([
@@ -85,17 +71,9 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', 'Usuário excluído com sucesso!');
     }
 
-    public function uploadPhoto(Request $request, $id)
+    public function uploadPhoto(UploadUserPhotoRequest $request, $id)
     {
-        $request->validate([
-            'photo' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
-
-        $user = User::find($id);
-
-        if (!$user) {
-            return redirect()->back()->withErrors(['user' => 'Usuário não encontrado']);
-        }
+        $user = User::findOrFail($id);
 
         if ($request->file('photo')) {
             $path = $request->file('photo')->store('profile_photos', 'public');

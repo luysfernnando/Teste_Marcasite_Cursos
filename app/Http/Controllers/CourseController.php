@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Course;
-use Illuminate\Http\Request;
+use App\Http\Requests\Course\StoreCourseRequest;
+use App\Http\Requests\Course\UpdateCourseRequest;
+use App\Http\Requests\Course\UploadCoursePhotoRequest;
 use Inertia\Inertia;
 
 class CourseController extends Controller
@@ -16,18 +18,9 @@ class CourseController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreCourseRequest $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'required|string|max:255',
-            'price' => 'required|numeric|min:0',
-            'is_active' => 'required|boolean',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date',
-            'remaining_slots' => 'required|integer|min:0',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
+        $validated = $request->validated();
 
         if ($request->hasFile('photo')) {
             $path = $request->file('photo')->store('course_logo', 'public');
@@ -46,17 +39,9 @@ class CourseController extends Controller
         ]);
     }
 
-    public function update(Request $request, Course $course)
+    public function update(UpdateCourseRequest $request, Course $course)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'required|string|max:255',
-            'price' => 'required|numeric|min:0',
-            'is_active' => 'required',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date',
-            'remaining_slots' => 'required|integer|min:0',
-        ]);
+        $validated = $request->validated();
 
         $validated['is_active'] = (int) $validated['is_active'];
 
@@ -83,17 +68,9 @@ class CourseController extends Controller
         ]);
     }
 
-    public function uploadPhoto(Request $request, $id)
+    public function uploadPhoto(UploadCoursePhotoRequest $request, $id)
     {
-        $request->validate([
-            'photo' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
-
         $course = Course::findOrFail($id);
-
-        if (!$course) {
-            return redirect()->back()->withErrors(['user' => 'Usuário não encontrado']);
-        }
 
         if ($request->file('photo')) {
             $path = $request->file('photo')->store('course_logo', 'public');
