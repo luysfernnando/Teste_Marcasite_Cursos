@@ -48,8 +48,18 @@ Agora, edite o arquivo `.env` para configurar as credenciais do seu banco de dad
 - `DB_DATABASE=nome_do_banco`
 - `DB_USERNAME=usuario_do_banco`
 - `DB_PASSWORD=senha_do_banco`
+- `VITE_STRIPE_KEY="pk_test_sua_chave_publica"`
+- `STRIPE_SECRET=sk_test_sua_chave_secreta`
 
-#### 2.2. Instalando Dependências PHP
+#### 2.2. Como Obter as Chaves da Stripe
+
+Para configurar o Stripe, você precisará das suas chaves secretas e públicas. Para isso:
+
+1. Crie uma conta no [Stripe](https://stripe.com/).
+2. Acesse a página de [ApiKeys](https://dashboard.stripe.com/test/apikeys).
+4. Copie a **Publishable key** (chave pública) e a **Secret key** (chave secreta) para colar nas variáveis de ambiente `VITE_STRIPE_KEY` e `STRIPE_SECRET`, respectivamente, no seu arquivo `.env`.
+
+#### 2.3. Instalando Dependências PHP
 
 Instale as dependências do Laravel utilizando o Composer:
 
@@ -57,7 +67,7 @@ Instale as dependências do Laravel utilizando o Composer:
 composer install
 ```
 
-#### 2.3. Gerando a Chave de Aplicação
+#### 2.4. Gerando a Chave de Aplicação
 
 Gere a chave da aplicação Laravel com o seguinte comando:
 
@@ -65,7 +75,7 @@ Gere a chave da aplicação Laravel com o seguinte comando:
 php artisan key:generate
 ```
 
-#### 2.4. Migrando o Banco de Dados
+#### 2.5. Migrando o Banco de Dados
 
 Se ainda não tiver um banco de dados configurado, crie-o no MySQL/MariaDB e depois execute as migrações:
 
@@ -73,7 +83,7 @@ Se ainda não tiver um banco de dados configurado, crie-o no MySQL/MariaDB e dep
 php artisan migrate
 ```
 
-#### 2.5. Instalando Dependências JavaScript
+#### 2.6. Instalando Dependências JavaScript
 
 Agora, instale as dependências JavaScript com NPM ou Yarn:
 
