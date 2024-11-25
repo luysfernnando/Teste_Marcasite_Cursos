@@ -7,6 +7,7 @@ use App\Models\Registration;
 use App\Models\User;
 use App\Http\Requests\Registration\StoreRegistrationRequest;
 use App\Http\Requests\Registration\UpdateRegistrationRequest;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class RegistrationController extends Controller
@@ -83,6 +84,10 @@ class RegistrationController extends Controller
         }
 
         $course->students()->attach($student->id, [
+            'is_active' => 1,
+            'paid_value' => $course->price,
+            'payment_status' => 1,
+            'enrolled_at' => now(),
             'created_at' => now(),
         ]);
 
@@ -90,5 +95,33 @@ class RegistrationController extends Controller
         $student->update(['cpf' => $validated['cpf']]);
 
         return redirect()->route('courses.list')->with('success', 'Aluno inscrito com sucesso!');
+    }
+
+    public function enrollUser($courseId)
+    {
+        $course = Course::findOrFail($courseId);
+        $user = Auth::user();
+
+        if (Registration::where('user_id', $user->id)->where('course_id', $course->id)->exists()) {
+            return redirect()->route('showcase')->with('error', 'Você já se matriculou nesse curso!');
+        }
+
+        if ($course->remaining_slots > 0) {
+
+            $course->students()->attach($user->id, [
+                'is_active' => 1,
+                'paid_value' => $course->price,
+                'payment_status' => 1,
+                'enrolled_at' => now(),
+                'created_at' => now(),
+            ]);
+
+            $course->remaining_slots -= 1;
+            $course->save();
+
+            return redirect()->route('showcase')->with('success', 'Curso Comprado com sucesso!');
+        }
+
+        return redirect()->route('showcase')->with('error', 'O curso não possui mais vagas!');
     }
 }

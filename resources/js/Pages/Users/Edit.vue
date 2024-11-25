@@ -7,16 +7,13 @@ import TextInput from "@/Components/TextInput.vue";
 import InputLabel from "@/Components/InputLabel.vue";
 import CpfInput from "@/Components/CpfInput.vue";
 
-// Recebendo os props (para edição de usuário)
 const props = defineProps({
     user: Object,
     flash: Object
 });
 
-// Definir se estamos criando ou editando
 const isEditing = ref(!!props.user);
 
-// Formulário de usuário
 const form = useForm({
     name: props.user?.name || '',
     type: props.user?.type ?? 1,
@@ -27,10 +24,8 @@ const form = useForm({
     password_confirmation: ''
 });
 
-// Função para enviar o formulário (criar ou editar)
 const submitForm = () => {
     if (isEditing.value) {
-        // Atualizar usuário
         router.put(route('users.update', { id: props.user.id }), form, {
             onError: (errors) => {
                 toast.error('Não foi possível atualizar o usuário', {
@@ -40,7 +35,6 @@ const submitForm = () => {
             }
         });
     } else {
-        // Criar novo usuário
         router.post(route('users.store'), form, {
             onError: (errors) => {
                 console.log(errors);
@@ -55,28 +49,18 @@ const uploadPhoto = (event) => {
         const formData = new FormData();
         formData.append('photo', file);
 
-        // Verificar se estamos criando ou editando
         const url = isEditing.value
             ? route('users.uploadPhoto', { id: props.user.id })
             : route('users.uploadPhoto', { id: 'new' });
 
         router.post(url, formData, {
-            onSuccess: () => {
-                toast.success('Foto de perfil atualizada com sucesso!', {
-                    autoClose: 1000,
-                });
-            },
             onError: (errors) => {
-                toast.error('Não foi possível atualizar a foto de perfil', {
-                    autoClose: 1000,
-                });
                 console.log(errors);
             }
         });
     }
 };
 
-// Exibir notificações com base na propriedade flash
 watch(() => props.flash, (newFlash) => {
     if (newFlash.success) {
         toast.success(newFlash.success, {
@@ -171,7 +155,7 @@ watch(() => props.flash, (newFlash) => {
                              alt="Foto de Perfil"
                              class="w-32 h-32 rounded-full mb-4"
                         >
-                        <input type="file" @change="uploadPhoto" class="mb-4">
+                        <input type="file" @change="uploadPhoto" accept=".jpeg,.png,.jpg" class="mb-4">
                         <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                             {{ isEditing ? 'Atualizar Usuário' : 'Criar Usuário' }}
                         </button>

@@ -6,6 +6,9 @@ use App\Models\Course;
 use App\Http\Requests\Course\StoreCourseRequest;
 use App\Http\Requests\Course\UpdateCourseRequest;
 use App\Http\Requests\Course\UploadCoursePhotoRequest;
+use App\Models\Registration;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class CourseController extends Controller
@@ -80,5 +83,56 @@ class CourseController extends Controller
         }
 
         return redirect()->route('courses.edit', $id)->with('success', 'Imagem do curso atualizada com sucesso!');
+    }
+
+    public function listUserCourses()
+    {
+        $user = auth()->user();
+        $registrations = Registration::where('user_id', $user->id)->get();
+
+        return Inertia::render('UserCourses/List', [
+            'registrations' => $registrations->map(function ($registrations) {
+                return [
+                    'id' => $registrations->id,
+                    'course_id' => $registrations->course->id,
+                    'name' => $registrations->course->name,
+                    'enrolled_at' => $registrations->enrolled_at,
+                    'payment_status' => $registrations->payment_status,
+                    'paid_value' => $registrations->paid_value,
+                ];
+            }),
+        ]);
+    }
+
+    public function editUserCourse(Course $course)
+    {
+        $user = auth()->user();
+
+        $registrations = Registration::where('user_id', $user->id)
+            ->where('course_id', $course->id)
+            ->first();
+
+        return Inertia::render('UserCourses/Edit', [
+            'course' => [
+                'id' => $course->id,
+                'name' => $course->name,
+                'enrolled_at' => $registrations->enrolled_at,
+                'payment_status' => $registrations->payment_status,
+                'paid_value' => $registrations->paid_value,
+                'description' => $course->description,
+                'image_path' => $course->image_path,
+            ],
+        ]);
+    }
+
+    public function showcase()
+    {
+        $user = auth()->user();
+        $courses = Course::where('is_active', 1)->get();
+
+        return Inertia::render('Showcase/List', [
+            'courses' => $courses,
+            'registered_courses' => $user->courses,
+        ]);
     }
 }

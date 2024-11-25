@@ -2,8 +2,9 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
+use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -20,6 +21,20 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Vite::prefetch(concurrency: 3);
+        Inertia::share([
+            'auth' => [
+                'user' => Auth::user() ? [
+                    'id' => Auth::user()->id,
+                    'name' => Auth::user()->name,
+                    'email' => Auth::user()->email,
+                    'type' => Auth::user()->type === 0 ? 'admin' : 'student',
+                ] : null,
+            ],
+            'errors' => function () {
+                return session()->get('errors')
+                    ? session()->get('errors')->getBag('default')->getMessages()
+                    : (object) [];
+            },
+        ]);
     }
 }

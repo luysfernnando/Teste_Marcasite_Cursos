@@ -11,6 +11,9 @@ import { Link } from '@inertiajs/vue3';
 const showingNavigationDropdown = ref(false);
 const { props } = usePage();
 const user = props.auth.user;
+const pageProps = usePage().props;
+const userType = pageProps.auth.user?.type;
+
 </script>
 
 <template>
@@ -29,26 +32,28 @@ const user = props.auth.user;
                             </div>
 
                             <!-- Navigation Links -->
-                            <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                                <!-- Dashboard Link -->
+                            <div v-if="userType === 0" class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                                 <NavLink :href="route('dashboard.list')" :active="route().current('dashboard.*')">
                                     Dashboard
                                 </NavLink>
-
-                                <!-- Cursos Link -->
                                 <NavLink :href="route('courses.list')" :active="route().current('courses.*') || route().current('students.*')">
                                     Cursos
                                 </NavLink>
-
-                                <!-- Usuários Link (caso necessário) -->
                                 <NavLink :href="route('users.index')" :active="route().current('users.*')">
-                                    Usuários
+                                    Usuarios
                                 </NavLink>
+                            </div>
 
-                                <!-- Configurações Link -->
-<!--                                <NavLink :href="route('settings.index')" :active="route().current('settings.*')">-->
-<!--                                    Configurações-->
-<!--                                </NavLink>-->
+                            <div v-if="userType === 1" class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                                <NavLink :href="route('dashboard.list')" :active="route().current('dashboard.*')">
+                                    Dashboard
+                                </NavLink>
+                                <NavLink :href="route('user_courses.list')" :active="route().current('user_courses.*')">
+                                    Meus Cursos
+                                </NavLink>
+                                <NavLink :href="route('showcase')" :active="route().current('showcase')">
+                                    Vitrine de Cursos
+                                </NavLink>
                             </div>
                         </div>
 
@@ -56,7 +61,7 @@ const user = props.auth.user;
                             <div class="relative ms-3 flex items-center">
                                 <img :src="user.profile_photo_path ? '/storage/' + user.profile_photo_path : 'https://cdn0.iconfinder.com/data/icons/user-pictures/100/unknown2-512.png'"
                                      alt="Foto de Perfil"
-                                     class="w-10 h-10 rounded-full transition-transform duration-500 hover:rotate-180"
+                                     class="w-10 h-10 rounded-full"
                                 >
                                 <Dropdown align="right" width="48">
                                     <template #trigger>
@@ -113,15 +118,10 @@ const user = props.auth.user;
                             Cursos
                         </ResponsiveNavLink>
 
-                        <!-- Usuários Link (caso necessário) -->
+                        <!-- Usuários Link -->
                         <ResponsiveNavLink :href="route('users.index')" :active="route().current('users.index')">
                             Usuários
                         </ResponsiveNavLink>
-
-                        <!-- Configurações Link -->
-<!--                        <ResponsiveNavLink :href="route('settings.index')" :active="route().current('settings.index')">-->
-<!--                            Configurações-->
-<!--                        </ResponsiveNavLink>-->
                     </div>
 
                     <!-- Responsive Settings Options -->
@@ -137,14 +137,14 @@ const user = props.auth.user;
 
                         <div class="mt-3 space-y-1">
                             <ResponsiveNavLink :href="route('profile.edit')">
-                                Profile
+                                Perfil
                             </ResponsiveNavLink>
                             <ResponsiveNavLink
                                 :href="route('logout')"
                                 method="post"
                                 as="button"
                             >
-                                Log Out
+                                Sair
                             </ResponsiveNavLink>
                         </div>
                     </div>

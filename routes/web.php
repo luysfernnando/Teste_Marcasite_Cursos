@@ -1,28 +1,30 @@
 <?php
 
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\ProfileController;
-use Illuminate\Foundation\Application;
-use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
-use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\CourseController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\SettingsController;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return redirect('/login');
 });
 
-Route::middleware('auth')->group(function () {
-    // Dashboard
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.list');
+// Dashboard
+Route::middleware(['auth', 'verified'])->get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.list');
 
-    // Perfil
+// Perfil
+Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::post('/purchase-course', [PaymentController::class, 'purchaseCourse'])->name('purchase.course');
+});
 
+// Admin
+Route::middleware(['auth', \App\Http\Middleware\CheckUserType::class.':admin'])->group(function () {
     // Usuários
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
     Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
@@ -52,9 +54,14 @@ Route::middleware('auth')->group(function () {
 
     // Registro de cursos
     Route::post('/register', [RegistrationController::class, 'register'])->name('courses.register');
-
-    // Configurações
-    Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
 });
 
-require __DIR__.'/auth.php';
+// Aluno
+Route::middleware(['auth', \App\Http\Middleware\CheckUserType::class.':student'])->group(function () {
+    Route::get('/my-courses', [CourseController::class, 'listUserCourses'])->name('user_courses.list');
+    Route::get('/my-courses/{course}/edit', [CourseController::class, 'editUserCourse'])->name('user_courses.edit');
+    Route::post('/courses/{course}/enroll', [RegistrationController::class, 'enrollUser'])->name('enroll_user');
+    Route::get('/showcase', [CourseController::class, 'showcase'])->name('showcase');
+});
+
+require __DIR__ . '/auth.php';

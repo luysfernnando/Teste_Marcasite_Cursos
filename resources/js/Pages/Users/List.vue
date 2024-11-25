@@ -76,11 +76,6 @@ watch(() => props.flash, (newFlash) => {
                             <th class="px-4 py-2 text-left w-1/4">Email</th>
                             <th class="px-4 py-2 text-left w-1/4">Tipo</th>
                             <th class="px-4 py-2 text-left w-1/4">Ativo</th>
-
-<!--                            <th class="px-4 py-2 text-left">Nome</th>-->
-<!--                            <th class="px-4 py-2 text-left">Email</th>-->
-<!--                            <th class="px-4 py-2 text-left">Tipo</th>-->
-<!--                            <th class="px-4 py-2 text-left">Ativo</th>-->
                             <th class="px-4 py-2 flex space-x-2 w-full"></th>
                         </tr>
                         </thead>
