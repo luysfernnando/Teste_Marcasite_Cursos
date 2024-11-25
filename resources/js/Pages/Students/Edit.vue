@@ -4,7 +4,6 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import {ref, watch} from 'vue';
 import {toast} from 'vue3-toastify';
 
-// Recebendo os props
 const props = defineProps({
     registration: Object,
     course: Object,
@@ -12,15 +11,12 @@ const props = defineProps({
     flash: Object,
 });
 
-console.log(props.registration.id);
-
 const paymentStatusOptions = ref([
     {value: '0', label: 'Aguardando Pagamento'},
     {value: '1', label: 'Pago'},
     {value: '2', label: 'Cancelado'},
 ]);
 
-// Usando o Inertia useForm para lidar com o formulário
 const form = useForm({
     name: props.student?.name,
     email: props.student?.email,
@@ -32,7 +28,6 @@ function submit() {
     form.put(route('students.update', {id: props.registration.id}));
 }
 
-// Exibir notificações com base na propriedade flash
 watch(() => props.flash, (newFlash) => {
     if (newFlash.success) {
         toast.success(newFlash.success, {
