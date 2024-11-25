@@ -1,7 +1,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import {Head, usePage} from '@inertiajs/vue3';
-import {onMounted, watch} from 'vue';
+import {ref, onMounted, computed, watch} from 'vue';
 import {toast} from 'vue3-toastify';
 import {loadStripe} from '@stripe/stripe-js';
 import {IconImageOff} from '@iconify-prerendered/vue-mdi';
@@ -19,9 +19,28 @@ defineProps({
     },
 });
 
+const searchQuery = ref('');
+const currentPage = ref(1);
+const itemsPerPage = 9;
+
+const filteredCourses = computed(() => {
+    return props.courses.filter(course => {
+        return course.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+            course.description.toLowerCase().includes(searchQuery.value.toLowerCase());
+    });
+});
+
+const paginatedCourses = computed(() => {
+    const start = (currentPage.value - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    return filteredCourses.value.slice(start, end);
+});
+
+const totalPages = computed(() => {
+    return Math.ceil(filteredCourses.value.length / itemsPerPage);
+});
+
 onMounted(() => {
-
-
     const urlParams = new URLSearchParams(window.location.search);
     const courseId = urlParams.get('course');
     const enrolled = urlParams.get('enrolled');
@@ -44,7 +63,7 @@ watch(() => props?.flash, (newFlash) => {
             autoClose: 5000,
         });
     }
-}, { immediate: true });
+}, {immediate: true});
 
 const purchaseCourse = async (course) => {
     const stripe = await loadStripe(import.meta.env.VITE_STRIPE_KEY);
@@ -77,13 +96,15 @@ function formatCurrency(value) {
         <template #header>
             <div class="flex justify-between items-center">
                 <h2 class="font-semibold text-xl text-gray-800 leading-tight">Vitrine de Cursos</h2>
+                <input v-model="searchQuery" type="text" placeholder="Buscar..."
+                       class="ml-4 px-4 py-2 border rounded-lg">
             </div>
         </template>
 
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                    <div v-for="course in courses" :key="course.id"
+                    <div v-for="course in paginatedCourses" :key="course.id"
                          class="bg-white shadow rounded-lg p-4 flex flex-col justify-between">
                         <div class="flex flex-col items-center">
                             <img
@@ -116,10 +137,22 @@ function formatCurrency(value) {
                                 :disabled="isRegistered(course.id) || course.remaining_slots === 0"
                                 @click="purchaseCourse(course)"
                             >
-                                {{ isRegistered(course.id) ? 'Já Matriculado' : (course.remaining_slots === 0 ? 'Esgotado!' : 'Comprar') }}
+                                {{
+                                    isRegistered(course.id) ? 'Já Matriculado' : (course.remaining_slots === 0 ? 'Esgotado!' : 'Comprar')
+                                }}
                             </button>
                         </div>
                     </div>
+                </div>
+                <div class="flex justify-between mt-4">
+                    <button @click="currentPage = Math.max(currentPage - 1, 1)" :disabled="currentPage === 1"
+                            class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">Anterior
+                    </button>
+                    <span>Página {{ currentPage }} de {{ totalPages }}</span>
+                    <button @click="currentPage = Math.min(currentPage + 1, totalPages)"
+                            :disabled="currentPage === totalPages"
+                            class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">Próxima
+                    </button>
                 </div>
             </div>
         </div>
